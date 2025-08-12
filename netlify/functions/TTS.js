@@ -18,20 +18,21 @@ function parseBoldText(line) {
   }).join('');
 }
 
+// ★★★★★ 해결책: 모든 URL의 &를 &amp;으로 수정 ★★★★★
 const fontLibrary = {
-  'default': { family: "'Noto Sans KR', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap');" },
-  'NM': { family: "'Nanum Myeongjo', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap');" },
-  'NGC': { family: "'Nanum Gothic Coding', monospace", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@400;700&display=swap');" },
-  'NPS': { family: "'Nanum Pen Script', cursive", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');" },
-  'NBS': { family: "'Nanum Brush Script', cursive", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap');" },
-  'GU': { family: "'Gugi', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Gugi&display=swap');" },
-  'DO': { family: "'Dongle', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Dongle:wght@300;400;700&display=swap');" },
-  'DOK': { family: "'Dokdo', cursive", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Dokdo&display=swap');" },
-  'SD': { family: "'Single Day', cursive", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Single+Day&display=swap');" },
-  'CF': { family: "'Cute Font', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Cute+Font&display=swap');" },
-  'BFO': { family: "'Bagel Fat One', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap');" },
-  'DI': { family: "'Diphylleia', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Diphylleia&display=swap');" },
-  'GO': { family: "'Grandiflora One', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Grandiflora+One&display=swap');" }
+  'default': { family: "'Noto Sans KR', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&amp;display=swap');" },
+  'NM': { family: "'Nanum Myeongjo', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&amp;display=swap');" },
+  'NGC': { family: "'Nanum Gothic Coding', monospace", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@400;700&amp;display=swap');" },
+  'NPS': { family: "'Nanum Pen Script', cursive", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&amp;display=swap');" },
+  'NBS': { family: "'Nanum Brush Script', cursive", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&amp;display=swap');" },
+  'GU': { family: "'Gugi', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Gugi&amp;display=swap');" },
+  'DO': { family: "'Dongle', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Dongle:wght@300;400;700&amp;display=swap');" },
+  'DOK': { family: "'Dokdo', cursive", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Dokdo&amp;display=swap');" },
+  'SD': { family: "'Single Day', cursive", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Single+Day&amp;display=swap');" },
+  'CF': { family: "'Cute Font', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Cute+Font&amp;display=swap');" },
+  'BFO': { family: "'Bagel Fat One', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Bagel+Fat+One&amp;display=swap');" },
+  'DI': { family: "'Diphylleia', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Diphylleia&amp;display=swap');" },
+  'GO': { family: "'Grandiflora One', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Grandiflora+One&amp;display=swap');" }
 };
 
 let bgImageBase64;
@@ -49,7 +50,7 @@ exports.handler = async function(event) {
   try {
     const params = event.queryStringParameters || {};
 
-    const width = 1200; // 가로 길이 1200px 고정
+    const width = 1200;
 
     const fontKey = params.font || 'default';
     const selectedFont = fontLibrary[fontKey] || fontLibrary['default'];
@@ -59,7 +60,7 @@ exports.handler = async function(event) {
 
     const align = params.align || 'left';
     let textAnchor, x;
-    const paddingX = 40; // 좌우 여백
+    const paddingX = 40;
     switch (align) {
       case 'center': textAnchor = 'middle'; x = width / 2; break;
       case 'right': textAnchor = 'end'; x = width - paddingX; break;
@@ -69,9 +70,8 @@ exports.handler = async function(event) {
     const rawText = params.text || '가로 1200px 고정|높이는 자동 조절됩니다.';
     const lines = escapeSVG(rawText).split('|');
     const lineHeight = 1.6;
-    const paddingY = 60; // 상하 여백
+    const paddingY = 60;
 
-    // 동적 높이 계산
     const totalTextBlockHeight = (lines.length - 1) * (lineHeight * fontSize) + fontSize;
     const height = Math.round(totalTextBlockHeight + (paddingY * 2));
 
@@ -79,7 +79,6 @@ exports.handler = async function(event) {
         ? `<image href="data:${getImageMimeType('background.jpg')};base64,${bgImageBase64}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice"/>`
         : `<rect width="${width}" height="${height}" fill="#000000" />`;
     
-    // 텍스트 수직 정렬을 위한 시작점 계산
     const startY = Math.round((height / 2) - (totalTextBlockHeight / 2) + (fontSize * 0.8));
 
     const textElements = lines.map((line, index) => {
