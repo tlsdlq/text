@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 
 function escapeSVG(str) {
@@ -18,7 +17,6 @@ function parseBoldText(line) {
   }).join('');
 }
 
-// ★★★★★ 해결책: 모든 URL의 &를 &amp;으로 수정 ★★★★★
 const fontLibrary = {
   'default': { family: "'Noto Sans KR', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&amp;display=swap');" },
   'NM': { family: "'Nanum Myeongjo', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&amp;display=swap');" },
@@ -35,21 +33,10 @@ const fontLibrary = {
   'GO': { family: "'Grandiflora One', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Grandiflora+One&amp;display=swap');" }
 };
 
-let bgImageBase64;
-try {
-  bgImageBase64 = fs.readFileSync(path.resolve(__dirname, '../../images/background.jpg'), 'base64');
-} catch (error) { console.error("배경 이미지 읽기 오류:", error); }
-
-function getImageMimeType(fileName) {
-  const ext = path.extname(fileName).toLowerCase();
-  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
-  return 'application/octet-stream';
-}
 
 exports.handler = async function(event) {
   try {
     const params = event.queryStringParameters || {};
-
     const width = 1200;
 
     const fontKey = params.font || 'default';
@@ -67,7 +54,7 @@ exports.handler = async function(event) {
       default: textAnchor = 'start'; x = paddingX; break;
     }
 
-    const rawText = params.text || '가로 1200px 고정|높이는 자동 조절됩니다.';
+    const rawText = params.text || '배경 캐싱 테스트|대역폭이 절약됩니다.';
     const lines = escapeSVG(rawText).split('|');
     const lineHeight = 1.6;
     const paddingY = 60;
@@ -75,9 +62,11 @@ exports.handler = async function(event) {
     const totalTextBlockHeight = (lines.length - 1) * (lineHeight * fontSize) + fontSize;
     const height = Math.round(totalTextBlockHeight + (paddingY * 2));
 
-    const backgroundContent = bgImageBase64 
-        ? `<image href="data:${getImageMimeType('background.jpg')};base64,${bgImageBase64}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice"/>`
-        : `<rect width="${width}" height="${height}" fill="#000000" />`;
+    // 배경 이미지의 공개 URL을 생성합니다.
+    const siteUrl = process.env.URL || 'http://localhost:8888';
+    const backgroundUrl = `${siteUrl}/background.jpg`;
+
+    const backgroundContent = `<image href="${backgroundUrl}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice"/>`;
     
     const startY = Math.round((height / 2) - (totalTextBlockHeight / 2) + (fontSize * 0.8));
 
@@ -109,7 +98,8 @@ exports.handler = async function(event) {
       statusCode: 200,
       headers: {
         'Content-Type': 'image/svg+xml',
-        'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com; img-src data:;",
+        // 외부 이미지를 허용하도록 CSP를 수정합니다. 'self'는 현재 도메인을 의미합니다.
+        'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com; img-src 'self';",
         'Cache-Control': 'public, max-age=3600, s-maxage=3600',
       },
       body: svg.trim(),
