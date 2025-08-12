@@ -21,6 +21,7 @@ function parseBoldText(line) {
 // 새로운 배경을 추가하려면 여기에 '키워드': '파일명' 형식으로 추가하세요.
 const backgroundLibrary = {
   'default': 'background.jpg', // 기본값, 우주
+  'matrix': 'matrix.jpg', // 메트릭스, 초록과 검정
 };
 
 // ★★★★★ 2. 폰트 라이브러리 ★★★★★
