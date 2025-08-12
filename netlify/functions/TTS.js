@@ -17,6 +17,13 @@ function parseBoldText(line) {
   }).join('');
 }
 
+// ★★★★★ 1. 배경 라이브러리 ★★★★★
+// 새로운 배경을 추가하려면 여기에 '키워드': '파일명' 형식으로 추가하세요.
+const backgroundLibrary = {
+  'default': 'background.jpg', // 기본값, 우주
+};
+
+// ★★★★★ 2. 폰트 라이브러리 ★★★★★
 const fontLibrary = {
   'default': { family: "'Noto Sans KR', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&amp;display=swap');" },
   'NM': { family: "'Nanum Myeongjo', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&amp;display=swap');" },
@@ -39,6 +46,11 @@ exports.handler = async function(event) {
     const params = event.queryStringParameters || {};
     const width = 1200;
 
+    // --- 배경 선택 ---
+    const bgKey = params.bg || 'default';
+    const bgFilename = backgroundLibrary[bgKey] || backgroundLibrary['default'];
+
+    // --- 폰트 및 텍스트 스타일 처리 ---
     const fontKey = params.font || 'default';
     const selectedFont = fontLibrary[fontKey] || fontLibrary['default'];
     const textColor = escapeSVG(params.textColor) || '#ffffff';
@@ -54,7 +66,7 @@ exports.handler = async function(event) {
       default: textAnchor = 'start'; x = paddingX; break;
     }
 
-    const rawText = params.text || '배경 캐싱 테스트|대역폭이 절약됩니다.';
+    const rawText = params.text || '배경 선택 테스트|bg=키워드 사용';
     const lines = escapeSVG(rawText).split('|');
     const lineHeight = 1.6;
     const paddingY = 60;
@@ -62,9 +74,8 @@ exports.handler = async function(event) {
     const totalTextBlockHeight = (lines.length - 1) * (lineHeight * fontSize) + fontSize;
     const height = Math.round(totalTextBlockHeight + (paddingY * 2));
 
-    // 배경 이미지의 공개 URL을 생성합니다.
     const siteUrl = process.env.URL || 'http://localhost:8888';
-    const backgroundUrl = `${siteUrl}/background.jpg`;
+    const backgroundUrl = `${siteUrl}/${bgFilename}`;
 
     const backgroundContent = `<image href="${backgroundUrl}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice"/>`;
     
@@ -98,8 +109,7 @@ exports.handler = async function(event) {
       statusCode: 200,
       headers: {
         'Content-Type': 'image/svg+xml',
-        // 외부 이미지를 허용하도록 CSP를 수정합니다. 'self'는 현재 도메인을 의미합니다.
-        'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com; img-src 'self';",
+        'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com; img-src 'self' data:;",
         'Cache-Control': 'public, max-age=3600, s-maxage=3600',
       },
       body: svg.trim(),
@@ -108,4 +118,4 @@ exports.handler = async function(event) {
     const errorSvg = `<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#f8d7da" /><text x="10" y="50%" font-family="monospace" font-size="16" fill="#721c24" dominant-baseline="middle">Error: ${escapeSVG(err.message)}</text></svg>`;
     return { statusCode: 500, headers: { 'Content-Type': 'image/svg+xml' }, body: errorSvg.trim() };
   }
-};
+};```
