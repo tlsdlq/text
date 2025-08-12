@@ -1,0 +1,6 @@
+[functions."*"]
+  # fonts 폴더와 images 폴더의 모든 파일을 함수에 포함시킵니다.
+  included_files = ["fonts/**", "images/**"]
+
+  # 타임아웃 설정
+  timeout = 10
