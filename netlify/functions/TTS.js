@@ -1,4 +1,5 @@
-const { background, matrix, stars } = require('./base64-images.js');
+const fs = require('fs');
+const path = require('path');
 
 function escapeSVG(str) {
   if (typeof str !== 'string') return '';
@@ -18,10 +19,17 @@ function parseBoldText(line) {
 }
 
 const backgroundLibrary = {
-  'default': background,
-  'stars': stars,
-  'matrix': matrix
+  'default': path.resolve(__dirname, '../../images/background.jpg'),
+  'stars': path.resolve(__dirname, '../../images/background.jpg'),
+  'matrix': path.resolve(__dirname, '../../images/matrix.jpg')
 };
+
+function getImageMimeType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+  if (ext === '.png') return 'image/png';
+  return 'application/octet-stream';
+}
 
 exports.handler = async function(event) {
   try {
@@ -29,10 +37,10 @@ exports.handler = async function(event) {
     const width = 1200;
 
     const bgKey = params.bg || 'default';
-    const bgInfo = backgroundLibrary[bgKey] || backgroundLibrary['default'];
+    const bgPath = backgroundLibrary[bgKey] || backgroundLibrary['default'];
     
-    const bgData = bgInfo.data;
-    const bgMimeType = bgInfo.mime;
+    const bgData = fs.readFileSync(bgPath, 'base64');
+    const bgMimeType = getImageMimeType(bgPath);
 
     const textColor = escapeSVG(params.textColor) || '#ffffff';
     const fontSize = parseInt(params.fontSize, 10) || 16;
