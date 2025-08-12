@@ -39,7 +39,7 @@ const constants = {
 
 const backgroundFilePaths = {
   'default': path.resolve(__dirname, '../../images/background.webp'),
-  'stars': path.resolve(__dirname, '../../images/background.webp'),
+  'stars': path.resolve(__dirname, '../../images/stars.webp'),
   'matrix': path.resolve(__dirname, '../../images/matrix.webp')
 };
 
