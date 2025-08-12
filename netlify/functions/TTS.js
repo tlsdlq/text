@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 
 function escapeSVG(str) {
@@ -17,9 +18,11 @@ function parseBoldText(line) {
   }).join('');
 }
 
+// ★★★ 1. 배경 라이브러리 (파일 경로를 가리킴) ★★★
 const backgroundLibrary = {
-  'default': 'background.jpg', // 기본값, 우주
-  'matrix': 'matrix.jpg', // 메트릭스, 초록과 검정
+  'default': path.resolve(__dirname, '../../images/background.jpg'),
+  'stars': path.resolve(__dirname, '../../images/background.jpg'),
+  'matrix': path.resolve(__dirname, '../../images/matrix.jpg')
 };
 
 const fontLibrary = {
@@ -38,15 +41,28 @@ const fontLibrary = {
   'GO': { family: "'Grandiflora One', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Grandiflora+One&amp;display=swap');" }
 };
 
+function getImageMimeType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+  if (ext === '.png') return 'image/png';
+  return 'application/octet-stream';
+}
+
 
 exports.handler = async function(event) {
   try {
     const params = event.queryStringParameters || {};
     const width = 1200;
 
+    // --- 배경 선택 및 데이터 변환 ---
     const bgKey = params.bg || 'default';
-    const bgFilename = backgroundLibrary[bgKey] || backgroundLibrary['default'];
+    const bgPath = backgroundLibrary[bgKey] || backgroundLibrary['default'];
+    
+    // ★★★ 2. 선택된 배경 이미지를 읽어 Base64로 인코딩 ★★★
+    const bgData = fs.readFileSync(bgPath, 'base64');
+    const bgMimeType = getImageMimeType(bgPath);
 
+    // 폰트 및 텍스트 처리
     const fontKey = params.font || 'default';
     const selectedFont = fontLibrary[fontKey] || fontLibrary['default'];
     const textColor = escapeSVG(params.textColor) || '#ffffff';
@@ -62,19 +78,16 @@ exports.handler = async function(event) {
       default: textAnchor = 'start'; x = paddingX; break;
     }
 
-    const rawText = params.text || '배경 캐싱 테스트|대역폭이 절약됩니다.';
+    const rawText = params.text || '배경 이미지가 이제|어디서든 잘 보입니다.';
     const lines = escapeSVG(rawText).split('|');
     const lineHeight = 1.6;
     const paddingY = 60;
 
     const totalTextBlockHeight = (lines.length - 1) * (lineHeight * fontSize) + fontSize;
     const height = Math.round(totalTextBlockHeight + (paddingY * 2));
-
-    // ★★★★★ 해결책: 배포된 사이트의 정확한 URL을 가져옵니다. ★★★★★
-    const siteUrl = process.env.URL || 'http://localhost:8888';
-    const backgroundUrl = `${siteUrl}/${bgFilename}`;
-
-    const backgroundContent = `<image href="${backgroundUrl}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice"/>`;
+    
+    // ★★★ 3. 배경 이미지 href에 Base64 데이터 직접 삽입 ★★★
+    const backgroundContent = `<image href="data:${bgMimeType};base64,${bgData}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice"/>`;
     
     const startY = Math.round((height / 2) - (totalTextBlockHeight / 2) + (fontSize * 0.8));
 
@@ -106,8 +119,6 @@ exports.handler = async function(event) {
       statusCode: 200,
       headers: {
         'Content-Type': 'image/svg+xml',
-        // ★★★★★ 해결책: CSP에 정확한 URL을 명시적으로 허용합니다. ★★★★★
-        'Content-Security-Policy': `default-src 'none'; style-src 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com; img-src ${siteUrl};`,
         'Cache-Control': 'public, max-age=3600, s-maxage=3600',
       },
       body: svg.trim(),
