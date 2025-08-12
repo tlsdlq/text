@@ -1,5 +1,4 @@
 {
-  "name": "netlify-tts-generator",
+  "name": "tts-generator",
   "version": "1.0.0",
-  "description": "Dynamic SVG image generator with custom text and background."
 }
