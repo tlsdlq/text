@@ -18,8 +18,6 @@ function parseBoldText(line) {
   }).join('');
 }
 
-// WebP 이미지의 Base64 데이터를 직접 저장합니다.
-// 중요: '...' 부분에 실제 WebP 이미지의 Base64 문자열을 붙여넣으세요.
 const backgroundLibrary = {
   'default': {
     mimeType: 'image/webp',
@@ -42,7 +40,6 @@ exports.handler = async function(event) {
     const bgKey = params.bg || 'default';
     const background = backgroundLibrary[bgKey] || backgroundLibrary['default'];
     
-    // Base64 데이터를 라이브러리에서 직접 가져옵니다.
     const bgData = background.data;
     const bgMimeType = background.mimeType;
 
