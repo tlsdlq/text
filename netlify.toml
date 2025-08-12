@@ -1,3 +1,2 @@
-
 [functions."*"]
-  timeout = 10 
+  timeout = 10
