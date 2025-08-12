@@ -1,9 +1,3 @@
 [functions."*"]
   included_files = ["images/**"]
   timeout = 10
-
-# [[headers]] 블록을 파일 하단에 추가합니다.
-[[headers]]
-  for = "/images/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
