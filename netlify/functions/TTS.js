@@ -17,14 +17,11 @@ function parseBoldText(line) {
   }).join('');
 }
 
-// ★★★★★ 1. 배경 라이브러리 ★★★★★
-// 새로운 배경을 추가하려면 여기에 '키워드': '파일명' 형식으로 추가하세요.
 const backgroundLibrary = {
   'default': 'background.jpg', // 기본값, 우주
   'matrix': 'matrix.jpg', // 메트릭스, 초록과 검정
 };
 
-// ★★★★★ 2. 폰트 라이브러리 ★★★★★
 const fontLibrary = {
   'default': { family: "'Noto Sans KR', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&amp;display=swap');" },
   'NM': { family: "'Nanum Myeongjo', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&amp;display=swap');" },
@@ -47,11 +44,9 @@ exports.handler = async function(event) {
     const params = event.queryStringParameters || {};
     const width = 1200;
 
-    // --- 배경 선택 ---
     const bgKey = params.bg || 'default';
     const bgFilename = backgroundLibrary[bgKey] || backgroundLibrary['default'];
 
-    // --- 폰트 및 텍스트 스타일 처리 ---
     const fontKey = params.font || 'default';
     const selectedFont = fontLibrary[fontKey] || fontLibrary['default'];
     const textColor = escapeSVG(params.textColor) || '#ffffff';
@@ -67,7 +62,7 @@ exports.handler = async function(event) {
       default: textAnchor = 'start'; x = paddingX; break;
     }
 
-    const rawText = params.text || '배경 선택 테스트|bg=키워드 사용';
+    const rawText = params.text || '배경 캐싱 테스트|대역폭이 절약됩니다.';
     const lines = escapeSVG(rawText).split('|');
     const lineHeight = 1.6;
     const paddingY = 60;
@@ -75,6 +70,7 @@ exports.handler = async function(event) {
     const totalTextBlockHeight = (lines.length - 1) * (lineHeight * fontSize) + fontSize;
     const height = Math.round(totalTextBlockHeight + (paddingY * 2));
 
+    // ★★★★★ 해결책: 배포된 사이트의 정확한 URL을 가져옵니다. ★★★★★
     const siteUrl = process.env.URL || 'http://localhost:8888';
     const backgroundUrl = `${siteUrl}/${bgFilename}`;
 
@@ -110,7 +106,8 @@ exports.handler = async function(event) {
       statusCode: 200,
       headers: {
         'Content-Type': 'image/svg+xml',
-        'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com; img-src 'self' data:;",
+        // ★★★★★ 해결책: CSP에 정확한 URL을 명시적으로 허용합니다. ★★★★★
+        'Content-Security-Policy': `default-src 'none'; style-src 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com; img-src ${siteUrl};`,
         'Cache-Control': 'public, max-age=3600, s-maxage=3600',
       },
       body: svg.trim(),
