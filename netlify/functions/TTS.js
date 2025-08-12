@@ -1,9 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 
-// 이미지 데이터를 캐싱하기 위한 객체
-const imageCache = {};
-
 function escapeSVG(str) {
   if (typeof str !== 'string') return '';
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -34,33 +31,17 @@ function getImageMimeType(filePath) {
   return 'application/octet-stream';
 }
 
-// 배경 이미지를 읽고 Base64로 인코딩하는 함수 (캐싱 로직 추가)
-function getBase64EncodedImage(bgKey) {
-  // 캐시에 이미지가 있으면 캐시된 데이터 반환
-  if (imageCache[bgKey]) {
-    return imageCache[bgKey];
-  }
-
-  const bgPath = backgroundLibrary[bgKey] || backgroundLibrary['default'];
-  const bgData = fs.readFileSync(bgPath, 'base64');
-  const bgMimeType = getImageMimeType(bgPath);
-
-  const result = { bgData, bgMimeType };
-  // 캐시에 결과 저장
-  imageCache[bgKey] = result;
-  
-  return result;
-}
-
 exports.handler = async function(event) {
   try {
     const params = event.queryStringParameters || {};
     const width = 1200;
 
     const bgKey = params.bg || 'default';
-    // 캐싱을 지원하는 함수를 통해 이미지 데이터 가져오기
-    const { bgData, bgMimeType } = getBase64EncodedImage(bgKey);
+    const bgPath = backgroundLibrary[bgKey] || backgroundLibrary['default'];
     
+    const bgData = fs.readFileSync(bgPath, 'base64');
+    const bgMimeType = getImageMimeType(bgPath);
+
     const textColor = escapeSVG(params.textColor) || '#ffffff';
     const fontSize = parseInt(params.fontSize, 10) || 16;
     
