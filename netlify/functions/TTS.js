@@ -7,94 +7,49 @@ function escapeSVG(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-
 const fontLibrary = {
-  // 기본 폰트
-  'default': {
-    family: "'Noto Sans KR', sans-serif",
-    importUrl: "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap');"
-  },
-  // --- 나눔 시리즈 ---
-  'NM': { // Nanum Myeongjo
-    family: "'Nanum Myeongjo', serif",
-    importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap');"
-  },
-  'NGC': { // Nanum Gothic Coding
-    family: "'Nanum Gothic Coding', monospace",
-    importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@400;700&display=swap');"
-  },
-  'NPS': { // Nanum Pen Script
-    family: "'Nanum Pen Script', cursive",
-    importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');"
-  },
-  'NBS': { // Nanum Brush Script
-    family: "'Nanum Brush Script', cursive",
-    importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap');"
-  },
-  // --- 개성있는 한글/영문 폰트 ---
-  'GU': { // Gugi
-    family: "'Gugi', sans-serif",
-    importUrl: "@import url('https://fonts.googleapis.com/css2?family=Gugi&display=swap');"
-  },
-  'DO': { // Dongle
-    family: "'Dongle', sans-serif",
-    importUrl: "@import url('https://fonts.googleapis.com/css2?family=Dongle:wght@300;400;700&display=swap');"
-  },
-  'DOK': { // Dokdo
-    family: "'Dokdo', cursive",
-    importUrl: "@import url('https://fonts.googleapis.com/css2?family=Dokdo&display=swap');"
-  },
-  'SD': { // Single Day
-    family: "'Single Day', cursive",
-    importUrl: "@import url('https://fonts.googleapis.com/css2?family=Single+Day&display=swap');"
-  },
-  'CF': { // Cute Font
-    family: "'Cute Font', sans-serif",
-    importUrl: "@import url('https://fonts.googleapis.com/css2?family=Cute+Font&display=swap');"
-  },
-  'BFO': { // Bagel Fat One
-    family: "'Bagel Fat One', sans-serif",
-    importUrl: "@import url('https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap');"
-  },
-  'DI': { // Diphylleia
-    family: "'Diphylleia', serif",
-    importUrl: "@import url('https://fonts.googleapis.com/css2?family=Diphylleia&display=swap');"
-  },
-  'GO': { // Grandiflora One
-    family: "'Grandiflora One', serif",
-    importUrl: "@import url('https://fonts.googleapis.com/css2?family=Grandiflora+One&display=swap');"
-  }
+  'default': { family: "'Noto Sans KR', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap');" },
+  'NM': { family: "'Nanum Myeongjo', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap');" },
+  'NGC': { family: "'Nanum Gothic Coding', monospace", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@400;700&display=swap');" },
+  'NPS': { family: "'Nanum Pen Script', cursive", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');" },
+  'NBS': { family: "'Nanum Brush Script', cursive", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap');" },
+  'GU': { family: "'Gugi', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Gugi&display=swap');" },
+  'DO': { family: "'Dongle', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Dongle:wght@300;400;700&display=swap');" },
+  'DOK': { family: "'Dokdo', cursive", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Dokdo&display=swap');" },
+  'SD': { family: "'Single Day', cursive", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Single+Day&display=swap');" },
+  'CF': { family: "'Cute Font', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Cute+Font&display=swap');" },
+  'BFO': { family: "'Bagel Fat One', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap');" },
+  'DI': { family: "'Diphylleia', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Diphylleia&display=swap');" },
+  'GO': { family: "'Grandiflora One', serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Grandiflora+One&display=swap');" }
 };
-// ==================================================================
 
-
-// --- 리소스 읽기 (배경 이미지만) ---
 let bgImageBase64;
 try {
-  const bgImagePath = path.resolve(__dirname, '../../images/background.jpg');
-  bgImageBase64 = fs.readFileSync(bgImagePath, 'base64');
-} catch (error) {
-  console.error("배경 이미지를 읽는 중 오류 발생:", error);
-}
+  bgImageBase64 = fs.readFileSync(path.resolve(__dirname, '../../images/background.jpg'), 'base64');
+} catch (error) { console.error("배경 이미지 읽기 오류:", error); }
 
 function getImageMimeType(fileName) {
-    const extension = path.extname(fileName).toLowerCase();
-    if (extension === '.jpg' || extension === '.jpeg') return 'image/jpeg';
-    if (extension === '.png') return 'image/png';
-    return 'application/octet-stream';
+  const ext = path.extname(fileName).toLowerCase();
+  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+  if (ext === '.png') return 'image/png';
+  return 'application/octet-stream';
 }
 
 exports.handler = async function(event) {
   try {
     const params = event.queryStringParameters || {};
-    
-    // --- 폰트 선택 ---
-    const fontKey = params.font || 'default';
-    const selectedFont = fontLibrary[fontKey] || fontLibrary['default'];
-
     const width = Math.min(parseInt(params.width, 10) || 800, 2000);
     const height = Math.min(parseInt(params.height, 10) || 400, 2000);
 
+    // --- 폰트 및 텍스트 스타일 처리 ---
+    const fontKey = params.font || 'default';
+    const selectedFont = fontLibrary[fontKey] || fontLibrary['default'];
+    const textColor = escapeSVG(params.textColor) || '#ffffff';
+    // ★ 변경점 1: 폰트 크기 기본값을 16px로 변경
+    const fontSize = parseInt(params.fontSize, 10) || 16;
+    const fontWeight = parseInt(params.fontWeight, 10) || 400;
+
+    // --- 배경 처리 ---
     let backgroundContent = '';
     if (params.useBg === 'true' && bgImageBase64) {
         const bgFit = params.bgFit === 'contain' ? 'xMidYMid meet' : 'xMidYMid slice';
@@ -104,25 +59,59 @@ exports.handler = async function(event) {
         backgroundContent = `<rect width="100%" height="100%" fill="${bgColor}" />`;
     }
 
-    const textColor = escapeSVG(params.textColor) || '#ffffff';
-    const textToShow = escapeSVG(params.text || 'Font Keyword Test!');
-    const fontSize = Math.min(parseInt(params.fontSize, 10) || Math.min(width / 12, height / 5), 1000);
-    const fontWeight = parseInt(params.fontWeight, 10) || 400;
+    // ★ 핵심 로직 1: 정렬 기능 처리 ★
+    const align = params.align || 'left'; // 기본값은 'left'
+    let textAnchor;
+    let x; // 텍스트의 x축 위치
+    const padding = 20; // 좌우 여백
 
+    switch (align) {
+      case 'center':
+        textAnchor = 'middle';
+        x = '50%';
+        break;
+      case 'right':
+        textAnchor = 'end';
+        x = width - padding;
+        break;
+      default: // 'left'
+        textAnchor = 'start';
+        x = padding;
+        break;
+    }
+
+    // ★ 핵심 로직 2: 줄바꿈 기능 처리 ★
+    const textToShow = escapeSVG(params.text || '왼쪽 정렬 기본값입니다.|줄바꿈은 | 문자를 사용하세요.');
+    const lines = textToShow.split('|'); // '|' 문자를 기준으로 텍스트를 나눕니다.
+    const lineHeight = 1.6; // 줄 간격 (em 단위)
+
+    // 여러 줄의 텍스트(<tspan>)를 생성합니다.
+    const textElements = lines.map((line, index) => {
+      // 첫 번째 줄은 dy 속성이 없고, 두 번째 줄부터 이전 줄과의 간격을 설정합니다.
+      const dy = index === 0 ? '0' : `${lineHeight}em`;
+      return `<tspan x="${x}" dy="${dy}">${line}</tspan>`;
+    }).join('');
+    
+    // 텍스트 블록 전체를 수직으로 가운데 정렬하기 위한 시작 y 위치 계산
+    const totalTextBlockHeight = (lines.length - 1) * lineHeight * fontSize + fontSize;
+    const startY = (height / 2) - (totalTextBlockHeight / 2) + (fontSize * 0.7);
+
+
+    // --- SVG 최종 생성 ---
     const svg = `
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
         <style>${selectedFont.importUrl}</style>
         ${backgroundContent}
         <text
-          x="50%" y="50%"
+          y="${startY}"
           font-family="${selectedFont.family}"
-          font-size="${fontSize}"
+          font-size="${fontSize}px"
           font-weight="${fontWeight}"
           fill="${textColor}"
-          text-anchor="middle" dominant-baseline="middle"
-          paint-order="stroke" stroke="#000000" stroke-width="2px"
+          text-anchor="${textAnchor}"
+          paint-order="stroke" stroke="#000000" stroke-width="1px"
         >
-          ${textToShow}
+          ${textElements}
         </text>
       </svg>
     `;
