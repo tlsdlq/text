@@ -1,4 +1,7 @@
+[build]
+  publish = "public"
+
 [functions."*"]
-  # images 폴더만 포함하면 됩니다.
-  included_files = ["images/**"]
+  # 이제 함수는 이미지 파일을 직접 읽지 않으므로 포함시킬 필요가 없습니다.
+  # included_files 설정은 삭제해도 무방합니다.
   timeout = 10
