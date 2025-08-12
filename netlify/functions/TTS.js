@@ -21,7 +21,7 @@ function parseBoldText(line) {
 // ★★★ 1. 배경 라이브러리 (파일 경로를 가리킴) ★★★
 const backgroundLibrary = {
   'default': path.resolve(__dirname, '../../images/background.jpg'),
-  'stars': path.resolve(__dirname, '../../images/background.jpg'),
+  'stars': path.resolve(__dirname, '../../images/stars.jpg'),
   'matrix': path.resolve(__dirname, '../../images/matrix.jpg')
 };
 
