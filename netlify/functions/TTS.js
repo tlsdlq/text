@@ -19,15 +19,14 @@ function parseBoldText(line) {
 }
 
 const backgroundLibrary = {
-  'default': path.resolve(__dirname, '../../images/background.jpg'),
-  'stars': path.resolve(__dirname, '../../images/background.jpg'),
-  'matrix': path.resolve(__dirname, '../../images/matrix.jpg')
+  'default': path.resolve(__dirname, '../../images/background.webp'),
+  'stars': path.resolve(__dirname, '../../images/background.webp'),
+  'matrix': path.resolve(__dirname, '../../images/matrix.webp')
 };
 
 function getImageMimeType(filePath) {
   const ext = path.extname(filePath).toLowerCase();
-  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
-  if (ext === '.png') return 'image/png';
+  if (ext === '.webp') return 'image/webp'; 
   return 'application/octet-stream';
 }
 
