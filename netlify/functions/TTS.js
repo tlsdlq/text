@@ -1,6 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
+// 이미지 데이터를 캐싱하기 위한 객체
+const imageCache = {};
+
 function escapeSVG(str) {
   if (typeof str !== 'string') return '';
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -31,12 +34,33 @@ function getImageMimeType(filePath) {
   return 'application/octet-stream';
 }
 
+// 배경 이미지를 읽고 Base64로 인코딩하는 함수 (캐싱 로직 추가)
+function getBase64EncodedImage(bgKey) {
+  // 캐시에 이미지가 있으면 캐시된 데이터 반환
+  if (imageCache[bgKey]) {
+    return imageCache[bgKey];
+  }
+
+  const bgPath = backgroundLibrary[bgKey] || backgroundLibrary['default'];
+  const bgData = fs.readFileSync(bgPath, 'base64');
+  const bgMimeType = getImageMimeType(bgPath);
+
+  const result = { bgData, bgMimeType };
+  // 캐시에 결과 저장
+  imageCache[bgKey] = result;
+  
+  return result;
+}
+
 exports.handler = async function(event) {
   try {
     const params = event.queryStringParameters || {};
     const width = 1200;
 
     const bgKey = params.bg || 'default';
+    // 캐싱을 지원하는 함수를 통해 이미지 데이터 가져오기
+    const { bgData, bgMimeType } = getBase64EncodedImage(bgKey);
+    
     const textColor = escapeSVG(params.textColor) || '#ffffff';
     const fontSize = parseInt(params.fontSize, 10) || 16;
     
@@ -57,22 +81,7 @@ exports.handler = async function(event) {
     const totalTextBlockHeight = (lines.length - 1) * (lineHeight * fontSize) + fontSize;
     const height = Math.round(totalTextBlockHeight + (paddingY * 2));
     
-    // --- 배경 이미지 처리 로직 수정 ---
-    let backgroundContent;
-    const useLinking = params.linking === 'true';
-
-    if (useLinking) {
-      // 성능 모드: backgroundImage 함수를 URL로 참조
-      const imageUrl = `/.netlify/functions/backgroundImage?bg=${bgKey}`;
-      backgroundContent = `<image href="${imageUrl}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice"/>`;
-    } else {
-      // 호환성 모드 (기본): Base64로 내장
-      const bgPath = backgroundLibrary[bgKey] || backgroundLibrary['default'];
-      const bgData = fs.readFileSync(bgPath, 'base64');
-      const bgMimeType = getImageMimeType(bgPath);
-      backgroundContent = `<image href="data:${bgMimeType};base64,${bgData}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice"/>`;
-    }
-    // --- 수정 끝 ---
+    const backgroundContent = `<image href="data:${bgMimeType};base64,${bgData}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice"/>`;
     
     const startY = Math.round((height / 2) - (totalTextBlockHeight / 2) + (fontSize * 0.8));
 
@@ -102,7 +111,6 @@ exports.handler = async function(event) {
       statusCode: 200,
       headers: {
         'Content-Type': 'image/svg+xml',
-        // SVG 자체의 캐시는 짧게 가져가거나, 파라미터가 동일하면 캐시되도록 설정합니다.
         'Cache-Control': 'public, max-age=3600, s-maxage=3600',
       },
       body: svg.trim(),
