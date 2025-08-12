@@ -1,32 +1,22 @@
 const fs = require('fs');
 const path = require('path');
 
-// SVG 내용에 포함될 수 있는 특수 문자를 이스케이프합니다.
 function escapeSVG(str) {
   if (typeof str !== 'string') return '';
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// ★ 핵심 로직 1: '{bold}' 구문을 파싱하여 tspan으로 변환하는 함수 ★
 function parseBoldText(line) {
-  // 1. 텍스트를 {굵은글씨} 패턴으로 나눕니다.
-  // ex: "일반 {굵은} 텍스트" -> ["일반 ", "굵은", " 텍스트"]
   const parts = line.split(/\{([^}]+)\}/g).filter(part => part);
-
-  // 2. 각 부분을 tspan으로 변환합니다.
   return parts.map((part, index) => {
-    // split의 결과에서 홀수 번째 인덱스(1, 3, 5...)가 {괄호} 안의 내용입니다.
     const isBold = index % 2 === 1;
     if (isBold) {
-      // 굵은 텍스트는 font-weight을 700(bold)으로 지정합니다.
       return `<tspan font-weight="700">${part}</tspan>`;
     } else {
-      // 일반 텍스트는 별도 스타일 없이 그대로 둡니다.
       return `<tspan>${part}</tspan>`;
     }
   }).join('');
 }
-
 
 const fontLibrary = {
   'default': { family: "'Noto Sans KR', sans-serif", importUrl: "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap');" },
@@ -52,15 +42,14 @@ try {
 function getImageMimeType(fileName) {
   const ext = path.extname(fileName).toLowerCase();
   if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
-  if (ext === '.png') return 'image/png';
   return 'application/octet-stream';
 }
 
 exports.handler = async function(event) {
   try {
     const params = event.queryStringParameters || {};
-    const width = Math.min(parseInt(params.width, 10) || 800, 2000);
-    const height = Math.min(parseInt(params.height, 10) || 400, 2000);
+
+    const width = 1200; // 가로 길이 1200px 고정
 
     const fontKey = params.font || 'default';
     const selectedFont = fontLibrary[fontKey] || fontLibrary['default'];
@@ -68,39 +57,36 @@ exports.handler = async function(event) {
     const fontSize = parseInt(params.fontSize, 10) || 16;
     const fontWeight = parseInt(params.fontWeight, 10) || 400;
 
-    let backgroundContent = '';
-    if (params.useBg === 'true' && bgImageBase64) {
-        const bgFit = params.bgFit === 'contain' ? 'xMidYMid meet' : 'xMidYMid slice';
-        backgroundContent = `<image href="data:${getImageMimeType('background.jpg')};base64,${bgImageBase64}" x="0" y="0" width="100%" height="100%" preserveAspectRatio="${bgFit}"/>`;
-    } else {
-        const bgColor = escapeSVG(params.bgColor) || '#000000';
-        backgroundContent = `<rect width="100%" height="100%" fill="${bgColor}" />`;
-    }
-
     const align = params.align || 'left';
     let textAnchor, x;
-    const padding = 20;
+    const paddingX = 40; // 좌우 여백
     switch (align) {
-      case 'center': textAnchor = 'middle'; x = '50%'; break;
-      case 'right': textAnchor = 'end'; x = width - padding; break;
-      default: textAnchor = 'start'; x = padding; break;
+      case 'center': textAnchor = 'middle'; x = width / 2; break;
+      case 'right': textAnchor = 'end'; x = width - paddingX; break;
+      default: textAnchor = 'start'; x = paddingX; break;
     }
 
-    // ★ 핵심 로직 2: 줄바꿈과 굵기 변환 로직 통합 ★
-    const rawText = params.text || '이것은 {부분 강조} 기능입니다.|{중요한 내용}만 두껍게 표시할 수 있습니다.';
+    const rawText = params.text || '가로 1200px 고정|높이는 자동 조절됩니다.';
     const lines = escapeSVG(rawText).split('|');
     const lineHeight = 1.6;
+    const paddingY = 60; // 상하 여백
+
+    // 동적 높이 계산
+    const totalTextBlockHeight = (lines.length - 1) * (lineHeight * fontSize) + fontSize;
+    const height = Math.round(totalTextBlockHeight + (paddingY * 2));
+
+    const backgroundContent = bgImageBase64 
+        ? `<image href="data:${getImageMimeType('background.jpg')};base64,${bgImageBase64}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice"/>`
+        : `<rect width="${width}" height="${height}" fill="#000000" />`;
+    
+    // 텍스트 수직 정렬을 위한 시작점 계산
+    const startY = Math.round((height / 2) - (totalTextBlockHeight / 2) + (fontSize * 0.8));
 
     const textElements = lines.map((line, index) => {
-      // 각 줄에 대해 굵기 파싱 함수를 호출합니다.
       const innerContent = parseBoldText(line);
       const dy = index === 0 ? '0' : `${lineHeight}em`;
-      // 한 줄을 나타내는 tspan 안에, 굵기별로 나뉜 tspan들이 들어갑니다.
       return `<tspan x="${x}" dy="${dy}">${innerContent}</tspan>`;
     }).join('');
-    
-    const totalTextBlockHeight = (lines.length - 1) * lineHeight * fontSize + fontSize;
-    const startY = (height / 2) - (totalTextBlockHeight / 2) + (fontSize * 0.7);
 
     const svg = `
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
