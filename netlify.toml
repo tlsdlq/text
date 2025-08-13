@@ -1,3 +1,2 @@
 [functions."*"]
-  included_files = ["images/**"]
   timeout = 10
