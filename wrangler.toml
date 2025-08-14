@@ -1,3 +1,11 @@
-name = "my-dynamic-svg" # Cloudflare에서 설정한 Worker 이름
-main = "src/index.js"    # 실행할 메인 파일 경로
+name = "my-cloudflare-only-svg"
+main = "src/index.js"
 compatibility_date = "2023-10-30"
+
+# Node.js 호환성 플래그를 켜서 일부 API를 사용할 수 있게 합니다.
+compatibility_flags = [ "nodejs_compat" ]
+
+# WASM 모듈 설정: photon 라이브러리의 WASM 파일을 'WASM_MODULE'이라는 이름으로 코드에서 사용할 수 있게 합니다.
+[[wasm_modules]]
+name = "WASM_MODULE"
+path = "./node_modules/@silvia-odwyer/photon-node/photon_rs_bg.wasm"
