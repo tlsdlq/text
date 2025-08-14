@@ -107,7 +107,7 @@ export default {
       const { searchParams } = new URL(request.url);
 
       const defaultParams = {
-        text: 'Dynamic {SVG} on Cloudflare|No Terminal Needed!',
+        text: '으음... 잘못 누르셨나요? 다시 해보세요!!',
         textColor: '#ffffff',
         fontSize: 16,
         align: 'left',
