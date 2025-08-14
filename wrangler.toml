@@ -1,0 +1,3 @@
+name = "my-dynamic-svg" # Cloudflare에서 설정한 Worker 이름
+main = "src/index.js"    # 실행할 메인 파일 경로
+compatibility_date = "2023-10-30"
