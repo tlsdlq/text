@@ -1,11 +1,9 @@
 {
-  "name": "my-svg-worker",
+  "name": "my-cloudflare-only-svg",
   "version": "1.0.0",
   "private": true,
-  "scripts": {
-    "deploy": "wrangler deploy"
-  },
-  "devDependencies": {
-    "wrangler": "^3.0.0"
+  "main": "src/index.js",
+  "dependencies": {
+    "@silvia-odwyer/photon-node": "^0.2.1"
   }
 }
